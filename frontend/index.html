@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartAccess - Gestion d'Accès RFID</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="bg-blue-600 p-2 rounded-lg">
+                        <i class="fas fa-id-card-alt text-white text-xl"></i>
+                    </div>
+                    <span class="ml-3 text-xl font-bold text-gray-900">Smart<span class="text-blue-600">Access</span></span>
+                </div>
+                
+                <!-- Menu Desktop -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-blue-600 font-medium">Accueil</a>
+                    <a href="#features" class="text-gray-700 hover:text-blue-600">Fonctionnalités</a>
+                    <a href="#about" class="text-gray-700 hover:text-blue-600">À propos</a>
+                    <a href="pages/login.html" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+                    </a>
+                    <a href="pages/register.html" class="border border-blue-600 text-blue-600 px-5 py-2 rounded-lg hover:bg-blue-50 transition">
+                        S'inscrire
+                    </a>
+                </div>
+                
+                <!-- Menu Mobile -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Menu Mobile Dropdown -->
+            <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
+                <div class="px-2 pt-2 pb-3 space-y-1">
+                    <a href="index.html" class="block px-3 py-2 text-blue-600 font-medium">Accueil</a>
+                    <a href="#features" class="block px-3 py-2 text-gray-700 hover:text-blue-600">Fonctionnalités</a>
+                    <a href="#about" class="block px-3 py-2 text-gray-700 hover:text-blue-600">À propos</a>
+                    <a href="pages/login.html" class="block px-3 py-2 text-blue-600">Se connecter</a>
+                    <a href="pages/register.html" class="block px-3 py-2 text-blue-600">S'inscrire</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                    Contrôle d'Accès Intelligent
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 opacity-90">
+                    Gestion moderne des accès employés avec technologie RFID
+                </p>
+                <p class="text-lg mb-10 max-w-3xl mx-auto opacity-80">
+                    Solution complète pour surveiller et contrôler les accès de vos employés en temps réel avec interface web intuitive.
+                </p>
+                <div class="space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="pages/register.html" class="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition shadow-lg">
+                        <i class="fas fa-rocket mr-2"></i>Commencer gratuitement
+                    </a>
+                    <a href="#demo" class="inline-block border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition">
+                        <i class="fas fa-play-circle mr-2"></i>Voir la démo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Fonctionnalités Puissantes
+                </h2>
+                <p class="text-gray-600 text-lg max-w-3xl mx-auto">
+                    Tous les outils dont vous avez besoin pour une gestion d'accès optimale
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-gray-50 p-8 rounded-xl card-hover">
+                    <div class="bg-blue-100 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-user-clock text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Contrôle Temps Réel</h3>
+                    <p class="text-gray-600">
+                        Visualisez les entrées/sorties de vos employés en temps réel avec notifications instantanées.
+                    </p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="bg-gray-50 p-8 rounded-xl card-hover">
+                    <div class="bg-green-100 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-alt text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Plannings Personnalisés</h3>
+                    <p class="text-gray-600">
+                        Définissez des horaires d'accès spécifiques pour chaque employé ou groupe.
+                    </p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="bg-gray-50 p-8 rounded-xl card-hover">
+                    <div class="bg-purple-100 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-bar text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Rapports Détaillés</h3>
+                    <p class="text-gray-600">
+                        Générez des rapports d'accès par période, employé ou département.
+                    </p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="bg-gray-50 p-8 rounded-xl card-hover">
+                    <div class="bg-red-100 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-shield-alt text-2xl text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Sécurité Maximale</h3>
+                    <p class="text-gray-600">
+                        Badges RFID cryptés et système d'alerte pour accès non autorisés.
+                    </p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="bg-gray-50 p-8 rounded-xl card-hover">
+                    <div class="bg-yellow-100 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-alt text-2xl text-yellow-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Mobile Friendly</h3>
+                    <p class="text-gray-600">
+                        Interface responsive accessible depuis smartphone, tablette ou ordinateur.
+                    </p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="bg-gray-50 p-8 rounded-xl card-hover">
+                    <div class="bg-indigo-100 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-plug text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Intégration ESP32</h3>
+                    <p class="text-gray-600">
+                        Connectez facilement vos lecteurs RFID ESP32 à notre plateforme.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="py-20 bg-gradient-to-r from-gray-50 to-blue-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Essayez la Démo
+                </h2>
+                <p class="text-gray-600 text-lg">
+                    Testez notre simulation RFID sans matériel
+                </p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden max-w-4xl mx-auto">
+                <div class="md:flex">
+                    <div class="md:w-1/2 p-8">
+                        <h3 class="text-2xl font-bold mb-6">Simulation d'Accès RFID</h3>
+                        <p class="text-gray-600 mb-6">
+                            Simulez le scan d'un badge RFID pour tester le système. Cette simulation fonctionne exactement comme le vrai ESP32.
+                        </p>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2 font-medium">Sélectionnez un badge :</label>
+                            <select id="demoBadgeSelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="EMP001">EMP001 - Jean Martin (Direction)</option>
+                                <option value="EMP002">EMP002 - Marie Dubois (RH)</option>
+                                <option value="EMP003">EMP003 - Pierre Bernard (Technique)</option>
+                                <option value="INVALID">BADGE_INVALID - Badge non enregistré</option>
+                            </select>
+                        </div>
+                        
+                        <button id="demoScanBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center">
+                            <i class="fas fa-rss mr-3"></i> Simuler le Scan RFID
+                        </button>
+                        
+                        <div id="demoResult" class="mt-6 p-4 rounded-lg hidden">
+                            <!-- Résultat dynamique -->
+                        </div>
+                    </div>
+                    
+                    <div class="md:w-1/2 bg-gray-900 p-8 flex flex-col justify-center">
+                        <div class="text-white">
+                            <h4 class="text-xl font-bold mb-4">Comment ça marche ?</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                    <span>Sélectionnez un badge employé</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                    <span>Cliquez sur "Simuler le Scan"</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                    <span>Visualisez l'accès en temps réel</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                    <span>L'historique est enregistré automatiquement</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 gradient-bg text-white">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                Prêt à moderniser votre gestion d'accès ?
+            </h2>
+            <p class="text-xl mb-10 opacity-90">
+                Rejoignez des centaines d'entreprises qui utilisent déjà SmartAccess
+            </p>
+            <a href="pages/register.html" class="inline-block bg-white text-blue-600 px-10 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-2xl">
+                Créer mon compte gratuitement
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+            <p class="mt-6 text-blue-100">
+                Aucune carte de crédit requise • Essai de 30 jours
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex justify-center mb-6">
+                    <div class="bg-blue-600 p-3 rounded-lg">
+                        <i class="fas fa-id-card-alt text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Smart<span class="text-blue-400">Access</span></h3>
+                <p class="text-gray-400 max-w-2xl mx-auto mb-8">
+                    Solution de gestion d'accès RFID moderne et intuitive pour votre entreprise.
+                </p>
+                <div class="flex justify-center space-x-6 mb-8">
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-linkedin text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-github text-xl"></i>
+                    </a>
+                </div>
+                <p class="text-gray-500 text-sm">
+                    © 2024 SmartAccess. Projet universitaire. Tous droits réservés.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script>
+        // Menu mobile
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Simulation RFID
+        document.getElementById('demoScanBtn').addEventListener('click', function() {
+            const badgeSelect = document.getElementById('demoBadgeSelect');
+            const resultDiv = document.getElementById('demoResult');
+            const selectedBadge = badgeSelect.value;
+            const badgeText = badgeSelect.options[badgeSelect.selectedIndex].text;
+            
+            // Animation du bouton
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i> Scan en cours...';
+            this.disabled = true;
+            
+            // Simulation de délai réseau
+            setTimeout(() => {
+                if (selectedBadge === 'INVALID') {
+                    resultDiv.className = "mt-6 p-4 rounded-lg bg-red-100 border border-red-300 text-red-800";
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-times-circle text-xl mr-3"></i>
+                            <div>
+                                <strong class="font-bold">Accès Refusé</strong>
+                                <p class="mt-1">Badge non reconnu. Veuillez contacter l'administration.</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = "mt-6 p-4 rounded-lg bg-green-100 border border-green-300 text-green-800";
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-xl mr-3"></i>
+                            <div>
+                                <strong class="font-bold">Accès Autorisé</strong>
+                                <p class="mt-1">${badgeText.split(' - ')[1]} - Accès enregistré à ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                resultDiv.classList.remove('hidden');
+                
+                // Réinitialiser le bouton
+                this.innerHTML = '<i class="fas fa-rss mr-3"></i> Simuler le Scan RFID';
+                this.disabled = false;
+                
+                // Cacher le résultat après 5 secondes
+                setTimeout(() => {
+                    resultDiv.classList.add('hidden');
+                }, 5000);
+                
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
