@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - SmartAccess</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { font-family: 'Segoe UI', system-ui, sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+        <!-- Carte de connexion -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <!-- En-tête -->
+            <div class="bg-blue-600 p-6 text-center">
+                <a href="../index.html" class="inline-block mb-4">
+                    <div class="bg-white p-2 rounded-lg inline-block">
+                        <i class="fas fa-id-card-alt text-blue-600 text-xl"></i>
+                    </div>
+                </a>
+                <h1 class="text-2xl font-bold text-white">Connexion</h1>
+                <p class="text-blue-100 mt-2">Accédez à votre tableau de bord</p>
+            </div>
+            
+            <!-- Formulaire -->
+            <div class="p-8">
+                <form id="loginForm">
+                    <!-- Email -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-2 font-medium" for="email">
+                            <i class="fas fa-envelope mr-2 text-blue-500"></i>Adresse Email
+                        </label>
+                        <input type="email" id="email" required
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                               placeholder="votre@email.com">
+                        <div id="emailError" class="text-red-500 text-sm mt-2 hidden">
+                            Veuillez entrer une adresse email valide
+                        </div>
+                    </div>
+                    
+                    <!-- Mot de passe -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-gray-700 font-medium" for="password">
+                                <i class="fas fa-lock mr-2 text-blue-500"></i>Mot de passe
+                            </label>
+                            <a href="forgot-password.html" class="text-sm text-blue-600 hover:text-blue-800">
+                                Mot de passe oublié ?
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <input type="password" id="password" required
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition pr-10"
+                                   placeholder="Votre mot de passe">
+                            <button type="button" id="togglePassword" class="absolute right-3 top-3 text-gray-500">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="passwordError" class="text-red-500 text-sm mt-2 hidden">
+                            Le mot de passe doit contenir au moins 6 caractères
+                        </div>
+                    </div>
+                    
+                    <!-- Souvenir de moi -->
+                    <div class="mb-6 flex items-center">
+                        <input type="checkbox" id="remember" class="h-4 w-4 text-blue-600 rounded focus:ring-blue-500">
+                        <label for="remember" class="ml-2 text-gray-700">
+                            Se souvenir de moi
+                        </label>
+                    </div>
+                    
+                    <!-- Bouton de connexion -->
+                    <button type="submit" id="loginBtn"
+                            class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center">
+                        <span id="btnText">Se connecter</span>
+                        <i id="btnIcon" class="fas fa-sign-in-alt ml-3"></i>
+                    </button>
+                    
+                    <!-- Message d'erreur -->
+                    <div id="loginError" class="mt-4 p-3 bg-red-100 border border-red-300 text-red-800 rounded-lg hidden">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+                </form>
+                
+                <!-- Séparateur -->
+                <div class="my-8 flex items-center">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="mx-4 text-gray-500">Ou</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+                
+                <!-- Lien d'inscription -->
+                <div class="text-center">
+                    <p class="text-gray-600">
+                        Vous n'avez pas de compte ?
+                        <a href="register.html" class="text-blue-600 font-medium hover:text-blue-800">
+                            S'inscrire gratuitement
+                        </a>
+                    </p>
+                </div>
+                
+                <!-- Retour à l'accueil -->
+                <div class="mt-6 text-center">
+                    <a href="../index.html" class="text-gray-500 hover:text-gray-700 inline-flex items-center">
+                        <i class="fas fa-arrow-left mr-2"></i> Retour à l'accueil
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mode démo -->
+        <div class="mt-8 bg-white/90 backdrop-blur-sm rounded-xl p-6 text-center">
+            <h3 class="font-bold text-gray-800 mb-2">Mode Démo (Test uniquement)</h3>
+            <p class="text-gray-600 text-sm mb-3">Utilisez ces identifiants pour tester :</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="fillDemo('admin')" class="bg-blue-100 text-blue-700 py-2 rounded-lg hover:bg-blue-200 transition text-sm">
+                    <i class="fas fa-user-shield mr-2"></i>Administrateur
+                </button>
+                <button onclick="fillDemo('employee')" class="bg-green-100 text-green-700 py-2 rounded-lg hover:bg-green-200 transition text-sm">
+                    <i class="fas fa-user-tie mr-2"></i>Employé
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Remplir les champs démo
+        function fillDemo(role) {
+            if (role === 'admin') {
+                document.getElementById('email').value = 'admin@smartaccess.com';
+                document.getElementById('password').value = 'admin123';
+            } else {
+                document.getElementById('email').value = 'employe@entreprise.com';
+                document.getElementById('password').value = 'employe123';
+            }
+        }
+
+        // Afficher/masquer mot de passe
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        });
+
+        // Validation du formulaire
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const emailError = document.getElementById('emailError');
+            const passwordError = document.getElementById('passwordError');
+            const loginError = document.getElementById('loginError');
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            
+            // Réinitialiser les erreurs
+            emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+            loginError.classList.add('hidden');
+            
+            let isValid = true;
+            
+            // Validation email
+            if (!email || !email.includes('@') || !email.includes('.')) {
+                emailError.classList.remove('hidden');
+                isValid = false;
+            }
+            
+            // Validation mot de passe
+            if (!password || password.length < 6) {
+                passwordError.classList.remove('hidden');
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Simulation de connexion
+            btnText.textContent = 'Connexion en cours...';
+            btnIcon.className = 'fas fa-spinner fa-spin ml-3';
+            loginBtn.disabled = true;
+            
+            // Simuler délai réseau
+            setTimeout(() => {
+                // En production, ici vous feriez un appel API
+                if (email === 'admin@smartaccess.com' && password === 'admin123') {
+                    // Redirection vers le dashboard admin
+                    window.location.href = 'dashboard-admin.html';
+                } else if (email === 'employe@entreprise.com' && password === 'employe123') {
+                    // Redirection vers le dashboard employé
+                    window.location.href = 'dashboard-employee.html';
+                } else {
+                    // Erreur de connexion
+                    document.getElementById('errorMessage').textContent = 'Email ou mot de passe incorrect';
+                    loginError.classList.remove('hidden');
+                    
+                    btnText.textContent = 'Se connecter';
+                    btnIcon.className = 'fas fa-sign-in-alt ml-3';
+                    loginBtn.disabled = false;
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

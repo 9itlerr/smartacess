@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion ESP32 - SmartAccess</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { font-family: 'Segoe UI', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Barre de navigation -->
+    <nav class="bg-white shadow-sm fixed top-0 right-0 left-0 z-40 h-16">
+        <div class="flex items-center justify-between px-4 h-full">
+            <button onclick="window.location.href='dashboard-admin.html'" class="md:hidden text-gray-700">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </button>
+            
+            <div class="flex items-center">
+                <div class="bg-green-600 p-2 rounded-lg">
+                    <i class="fas fa-rss text-white"></i>
+                </div>
+                <span class="ml-3 font-bold text-gray-800">Smart<span class="text-green-600">Access</span></span>
+                <span class="ml-4 text-gray-600">/ Appareils ESP32</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='dashboard-admin.html'" class="text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-tachometer-alt text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Contenu principal -->
+    <main class="pt-20 p-4 md:p-8">
+        <!-- En-tête -->
+        <div class="mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Gestion des Appareils ESP32</h1>
+            <p class="text-gray-600">Configurez et gérez vos lecteurs RFID ESP32</p>
+        </div>
+        
+        <!-- Bannière configuration -->
+        <div class="bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">🔧 Configuration ESP32</h2>
+                    <p class="opacity-90">Ajoutez de nouveaux appareils ou gérez les existants</p>
+                </div>
+                <button onclick="openAddDeviceModal()" class="mt-4 md:mt-0 bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-plus-circle mr-2"></i> Ajouter un ESP32
+                </button>
+            </div>
+        </div>
+        
+        <!-- Cartes d'état -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-wifi text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">En ligne</p>
+                        <p id="onlineCount" class="text-2xl font-bold">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center">
+                    <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Inactifs</p>
+                        <p id="offlineCount" class="text-2xl font-bold">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow p-6">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-microchip text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Total</p>
+                        <p id="totalCount" class="text-2xl font-bold">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des appareils -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b">
+                <h2 class="text-lg font-bold text-gray-800">Appareils connectés</h2>
+            </div>
+            
+            <div id="devicesList" class="p-6">
+                <!-- Chargé dynamiquement -->
+                <div class="text-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                    <p class="text-gray-500">Chargement des appareils...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions de configuration -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <h3 class="font-bold text-blue-800 mb-4">📱 Configuration ESP32</h3>
+                <ol class="list-decimal pl-5 space-y-3 text-blue-700">
+                    <li>Programmez l'ESP32 avec le code fourni</li>
+                    <li>Connectez-vous au WiFi "SmartAccess-Setup"</li>
+                    <li>Allez à 192.168.4.1 sur votre téléphone</li>
+                    <li>Entrez votre WiFi et les informations ESP32</li>
+                    <li>Redémarrez l'appareil</li>
+                </ol>
+                
+                <div class="mt-6 p-4 bg-white rounded-lg">
+                    <h4 class="font-bold mb-2">Code ESP32</h4>
+                    <button onclick="showESP32Code()" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-code mr-2"></i> Voir le code Arduino
+                    </button>
+                </div>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                <h3 class="font-bold text-green-800 mb-4">🔗 Test de connexion</h3>
+                <p class="text-green-700 mb-4">Testez si votre ESP32 est bien connecté:</p>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <div id="serverStatus" class="w-3 h-3 rounded-full bg-red-500 mr-3"></div>
+                        <span>Serveur local</span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div id="apiStatus" class="w-3 h-3 rounded-full bg-red-500 mr-3"></div>
+                        <span>API ESP32</span>
+                    </div>
+                    
+                    <button onclick="testConnection()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plug mr-2"></i> Tester la connexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Modal Ajout d'appareil -->
+    <div id="addDeviceModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white p-6 border-b flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">Ajouter un ESP32</h2>
+                <button onclick="closeAddDeviceModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="addDeviceForm" class="p-6">
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Nom de l'appareil *</label>
+                    <input type="text" id="deviceName" required
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="ESP32 Porte principale">
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Device ID *</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="deviceId" required
+                                   class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                   placeholder="ESP-ABC123">
+                            <button type="button" onclick="generateDeviceId()" class="bg-gray-100 text-gray-700 px-4 rounded-lg hover:bg-gray-200">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">ID unique de l'appareil</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Secret Key *</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="secretKey" required
+                                   class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                   placeholder="SK-123456">
+                            <button type="button" onclick="generateSecretKey()" class="bg-gray-100 text-gray-700 px-4 rounded-lg hover:bg-gray-200">
+                                <i class="fas fa-key"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Clé d'authentification</p>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Emplacement *</label>
+                    <input type="text" id="deviceLocation" required
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="Entrée principale, Porte arrière...">
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-gray-700 mb-2 font-medium">Type d'appareil</label>
+                    <select id="deviceType" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="rfid_reader">Lecteur RFID</option>
+                        <option value="door_controller">Contrôleur de porte</option>
+                        <option value="gate_controller">Contrôleur de portail</option>
+                        <option value="other">Autre</option>
+                    </select>
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-bold text-blue-800 mb-2">📋 Informations importantes</h4>
+                    <p class="text-blue-700 text-sm">Ces informations seront nécessaires pour programmer l'ESP32. Notez-les !</p>
+                    <div id="deviceInfoPreview" class="mt-3 p-3 bg-white rounded">
+                        <!-- Prévisualisation -->
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="button" onclick="closeAddDeviceModal()"
+                            class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50">
+                        Annuler
+                    </button>
+                    <button type="submit"
+                            class="flex-1 bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700">
+                        Ajouter l'appareil
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Code ESP32 -->
+    <div id="codeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 text-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-gray-800 p-6 border-b border-gray-700 flex justify-between items-center">
+                <h2 class="text-xl font-bold">Code Arduino pour ESP32</h2>
+                <button onclick="closeCodeModal()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <pre class="text-sm overflow-x-auto"><code id="esp32Code">
+#include &lt;WiFi.h&gt;
+#include &lt;HTTPClient.h&gt;
+
+// CONFIGURATION - À MODIFIER
+const char* ssid = "VOTRE_WIFI";
+const char* password = "VOTRE_MDP";
+const char* serverUrl = "http://VOTRE_IP:3000/api/esp32/scan";
+
+// Remplacer avec vos informations
+const char* deviceId = "ESP-VOTRE_ID";
+const char* secretKey = "VOTRE_SECRET_KEY";
+
+void setup() {
+  Serial.begin(115200);
+  connectToWiFi();
+  registerDevice();
+}
+
+void loop() {
+  // Votre code RFID ici
+  delay(1000);
+}
+
+void connectToWiFi() {
+  WiFi.begin(ssid, password);
+  Serial.print("Connexion WiFi");
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  Serial.println("\nWiFi connecté!");
+}
+
+void registerDevice() {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(String(serverUrl).c_str());
+    http.addHeader("Content-Type", "application/json");
+    
+    String payload = "{\"deviceId\":\"" + String(deviceId) + 
+                    "\",\"secretKey\":\"" + String(secretKey) + "\"}";
+    
+    int httpCode = http.POST(payload);
+    
+    if (httpCode == 200) {
+      Serial.println("Enregistrement réussi!");
+    }
+    
+    http.end();
+  }
+}
+                </code></pre>
+                
+                <div class="mt-6 p-4 bg-gray-800 rounded-lg">
+                    <h4 class="font-bold mb-2">Instructions:</h4>
+                    <ol class="list-decimal pl-5 space-y-2 text-gray-300">
+                        <li>Remplacez <code class="bg-gray-700 px-1">VOTRE_WIFI</code> et <code class="bg-gray-700 px-1">VOTRE_MDP</code></li>
+                        <li>Remplacez <code class="bg-gray-700 px-1">VOTRE_IP</code> par l'IP de votre PC</li>
+                        <li>Remplacez <code class="bg-gray-700 px-1">ESP-VOTRE_ID</code> et <code class="bg-gray-700 px-1">VOTRE_SECRET_KEY</code></li>
+                        <li>Téléversez le code sur l'ESP32</li>
+                        <li>Ouvrez le Moniteur Série (115200 bauds)</li>
+                    </ol>
+                </div>
+                
+                <button onclick="copyCode()" class="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-copy mr-2"></i> Copier le code
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let devices = [];
+        
+        // Charger les appareils
+        async function loadDevices() {
+            try {
+                const response = await fetch('/api/devices');
+                const data = await response.json();
+                
+                if (data.success) {
+                    devices = data.devices;
+                    updateDevicesList();
+                    updateCounters();
+                }
+            } catch (error) {
+                console.error('Erreur chargement appareils:', error);
+                showError('Impossible de charger les appareils');
+            }
+        }
+        
+        // Mettre à jour la liste
+        function updateDevicesList() {
+            const container = document.getElementById('devicesList');
+            
+            if (devices.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-microchip text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 mb-4">Aucun appareil enregistré</p>
+                        <button onclick="openAddDeviceModal()" class="text-green-600 hover:text-green-800">
+                            <i class="fas fa-plus-circle mr-2"></i>Ajouter votre premier ESP32
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            devices.forEach(device => {
+                const lastSeen = device.lastSeen ? 
+                    getTimeAgo(new Date(device.lastSeen)) : 
+                    'Jamais';
+                
+                const statusColors = {
+                    online: 'bg-green-100 text-green-800',
+                    offline: 'bg-red-100 text-red-800'
+                };
+                
+                const statusIcons = {
+                    online: 'fa-wifi',
+                    offline: 'fa-times-circle'
+                };
+                
+                html += `
+                    <div class="border rounded-xl p-6 mb-4 hover:bg-gray-50">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div class="mb-4 md:mb-0">
+                                <div class="flex items-center mb-2">
+                                    <div class="${statusColors[device.status]} px-3 py-1 rounded-full text-sm">
+                                        <i class="fas ${statusIcons[device.status]} mr-1"></i>
+                                        ${device.status === 'online' ? 'En ligne' : 'Hors ligne'}
+                                    </div>
+                                    <span class="ml-3 text-sm text-gray-500">${lastSeen}</span>
+                                </div>
+                                <h3 class="text-lg font-bold">${device.name}</h3>
+                                <p class="text-gray-600">📍 ${device.location}</p>
+                                <div class="mt-2">
+                                    <span class="text-sm text-gray-500">ID:</span>
+                                    <code class="ml-2 bg-gray-100 px-2 py-1 rounded text-sm">${device.deviceId}</code>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <button onclick="editDevice('${device.deviceId}')" 
+                                        class="text-blue-600 hover:text-blue-800 p-2">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteDevice('${device.deviceId}')" 
+                                        class="text-red-600 hover:text-red-800 p-2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button onclick="testDevice('${device.deviceId}')" 
+                                        class="text-green-600 hover:text-green-800 p-2">
+                                    <i class="fas fa-plug"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Mettre à jour les compteurs
+        function updateCounters() {
+            const onlineCount = devices.filter(d => d.status === 'online').length;
+            const offlineCount = devices.filter(d => d.status === 'offline').length;
+            
+            document.getElementById('onlineCount').textContent = onlineCount;
+            document.getElementById('offlineCount').textContent = offlineCount;
+            document.getElementById('totalCount').textContent = devices.length;
+        }
+        
+        // Générer des IDs
+        function generateDeviceId() {
+            const prefix = 'ESP-';
+            const random = Math.random().toString(36).substr(2, 6).toUpperCase();
+            document.getElementById('deviceId').value = prefix + random;
+            updateDevicePreview();
+        }
+        
+        function generateSecretKey() {
+            const prefix = 'SK-';
+            const random = Math.random().toString(36).substr(2, 9).toUpperCase();
+            document.getElementById('secretKey').value = prefix + random;
+            updateDevicePreview();
+        }
+        
+        // Prévisualisation
+        function updateDevicePreview() {
+            const name = document.getElementById('deviceName').value || 'Non défini';
+            const deviceId = document.getElementById('deviceId').value || 'Non défini';
+            const secretKey = document.getElementById('secretKey').value || 'Non défini';
+            const location = document.getElementById('deviceLocation').value || 'Non défini';
+            
+            document.getElementById('deviceInfoPreview').innerHTML = `
+                <p><strong>Nom:</strong> ${name}</p>
+                <p><strong>Device ID:</strong> <code>${deviceId}</code></p>
+                <p><strong>Secret Key:</strong> <code>${secretKey}</code></p>
+                <p><strong>Emplacement:</strong> ${location}</p>
+            `;
+        }
+        
+        // Modals
+        function openAddDeviceModal() {
+            document.getElementById('addDeviceModal').classList.remove('hidden');
+            document.getElementById('addDeviceForm').reset();
+            generateDeviceId();
+            generateSecretKey();
+            updateDevicePreview();
+        }
+        
+        function closeAddDeviceModal() {
+            document.getElementById('addDeviceModal').classList.add('hidden');
+        }
+        
+        function showESP32Code() {
+            document.getElementById('codeModal').classList.remove('hidden');
+        }
+        
+        function closeCodeModal() {
+            document.getElementById('codeModal').classList.add('hidden');
+        }
+        
+        // Ajouter un appareil
+        document.getElementById('addDeviceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const device = {
+                name: document.getElementById('deviceName').value,
+                deviceId: document.getElementById('deviceId').value,
+                secretKey: document.getElementById('secretKey').value,
+                location: document.getElementById('deviceLocation').value,
+                type: document.getElementById('deviceType').value
+            };
+            
+            // Vérifier si l'ID existe déjà
+            const exists = devices.some(d => d.deviceId === device.deviceId);
+            if (exists) {
+                showError('Cet ID d\'appareil est déjà utilisé');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/devices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(device)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Appareil ajouté avec succès');
+                    await loadDevices();
+                    closeAddDeviceModal();
+                } else {
+                    showError('Erreur lors de l\'ajout: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erreur ajout:', error);
+                showError('Impossible d\'ajouter l\'appareil');
+            }
+        });
+        
+        // Éditer un appareil
+        function editDevice(deviceId) {
+            const device = devices.find(d => d.deviceId === deviceId);
+            if (!device) return;
+            
+            alert(`Modifier l'appareil:\n\n` +
+                  `Nom: ${device.name}\n` +
+                  `ID: ${device.deviceId}\n` +
+                  `Emplacement: ${device.location}\n\n` +
+                  `(Fonction d'édition à implémenter)`);
+        }
+        
+        // Supprimer un appareil
+        async function deleteDevice(deviceId) {
+            if (!confirm('Supprimer cet appareil ?')) return;
+            
+            try {
+                // Note: Le serveur actuel ne supporte pas DELETE pour devices
+                // On filtre localement pour la démo
+                devices = devices.filter(d => d.deviceId !== deviceId);
+                updateDevicesList();
+                updateCounters();
+                showSuccess('Appareil supprimé (démo)');
+                
+                // En production, décommenter ceci:
+                // const response = await fetch(`/api/devices/${deviceId}`, { method: 'DELETE' });
+                // const data = await response.json();
+                // if (data.success) {
+                //     showSuccess('Appareil supprimé');
+                //     await loadDevices();
+                // }
+            } catch (error) {
+                console.error('Erreur suppression:', error);
+                showError('Impossible de supprimer l\'appareil');
+            }
+        }
+        
+        // Tester un appareil
+        async function testDevice(deviceId) {
+            const device = devices.find(d => d.deviceId === deviceId);
+            if (!device) return;
+            
+            try {
+                // Simuler un ping
+                const response = await fetch('/api/esp32/ping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deviceId: device.deviceId,
+                        secretKey: device.secretKey
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess(`Appareil ${device.name} répond correctement`);
+                    await loadDevices(); // Recharger pour mettre à jour le statut
+                } else {
+                    showError(`Appareil ${device.name} ne répond pas: ${data.message}`);
+                }
+            } catch (error) {
+                showError('Erreur de test: ' + error.message);
+            }
+        }
+        
+        // Tester la connexion serveur
+        async function testConnection() {
+            const serverStatus = document.getElementById('serverStatus');
+            const apiStatus = document.getElementById('apiStatus');
+            
+            serverStatus.className = 'w-3 h-3 rounded-full bg-yellow-500 mr-3';
+            apiStatus.className = 'w-3 h-3 rounded-full bg-yellow-500 mr-3';
+            
+            // Test serveur
+            try {
+                const response = await fetch('/api/stats');
+                if (response.ok) {
+                    serverStatus.className = 'w-3 h-3 rounded-full bg-green-500 mr-3';
+                } else {
+                    serverStatus.className = 'w-3 h-3 rounded-full bg-red-500 mr-3';
+                }
+            } catch {
+                serverStatus.className = 'w-3 h-3 rounded-full bg-red-500 mr-3';
+            }
+            
+            // Test API ESP32
+            try {
+                const response = await fetch('/api/esp32/ping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deviceId: 'TEST',
+                        secretKey: 'TEST'
+                    })
+                });
+                
+                // Même si ça échoue (car mauvais ID), l'API répond
+                apiStatus.className = 'w-3 h-3 rounded-full bg-green-500 mr-3';
+            } catch {
+                apiStatus.className = 'w-3 h-3 rounded-full bg-red-500 mr-3';
+            }
+        }
+        
+        // Copier le code
+        function copyCode() {
+            const code = document.getElementById('esp32Code').textContent;
+            navigator.clipboard.writeText(code);
+            showSuccess('Code copié dans le presse-papier');
+        }
+        
+        // Utilitaires
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'À l\'instant';
+            if (diffMins < 60) return `Il y a ${diffMins} min`;
+            if (diffMins < 1440) return `Il y a ${Math.floor(diffMins / 60)}h`;
+            return `Il y a ${Math.floor(diffMins / 1440)}j`;
+        }
+        
+        function showSuccess(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg z-50';
+            notification.innerHTML = `
+                <strong class="font-bold">Succès!</strong>
+                <span class="block sm:inline"> ${message}</span>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50';
+            notification.innerHTML = `
+                <strong class="font-bold">Erreur!</strong>
+                <span class="block sm:inline"> ${message}</span>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        // Écouteurs d'événements pour la prévisualisation
+        document.querySelectorAll('#addDeviceForm input, #addDeviceForm select').forEach(input => {
+            input.addEventListener('input', updateDevicePreview);
+            input.addEventListener('change', updateDevicePreview);
+        });
+        
+        // Charger au démarrage
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDevices();
+            testConnection();
+        });
+        
+        // Rafraîchir toutes les 30 secondes
+        setInterval(loadDevices, 30000);
+    </script>
+</body>
+</html>

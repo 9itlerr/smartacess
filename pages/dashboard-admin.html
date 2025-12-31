@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - SmartAccess</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { font-family: 'Segoe UI', system-ui, sans-serif; }
+        .sidebar { transition: all 0.3s ease; }
+        .main-content { transition: all 0.3s ease; }
+        .stat-card { transition: transform 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .active-link { background: linear-gradient(90deg, #3b82f6, #6366f1); color: white; }
+        .table-row:hover { background-color: #f8fafc; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Barre de navigation supérieure -->
+    <nav class="bg-white shadow-sm fixed top-0 right-0 left-0 z-40 h-16">
+        <div class="flex items-center justify-between px-4 h-full">
+            <!-- Bouton menu mobile -->
+            <button id="mobileMenuBtn" class="md:hidden text-gray-700">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            
+            <!-- Logo -->
+            <div class="flex items-center">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fas fa-id-card-alt text-white"></i>
+                </div>
+                <span class="ml-3 font-bold text-gray-800 hidden md:inline">Smart<span class="text-blue-600">Access</span></span>
+            </div>
+            
+            <!-- Droite: notifications et profil -->
+            <div class="flex items-center space-x-4">
+                <!-- Notifications -->
+                <div class="relative">
+                    <button id="notificationBtn" class="text-gray-600 hover:text-blue-600 relative">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span id="notificationCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </button>
+                </div>
+                
+                <!-- Profil -->
+                <div class="relative">
+                    <button id="profileBtn" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                            AM
+                        </div>
+                        <div class="hidden md:block text-left">
+                            <p id="userName" class="font-medium text-gray-800">Admin Manager</p>
+                            <p class="text-xs text-gray-600">Administrateur</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-600 hidden md:block"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Overlay pour mobile -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar fixed left-0 top-0 h-full w-64 bg-white shadow-lg z-40 pt-16">
+        <div class="h-full overflow-y-auto">
+            <!-- Menu -->
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="dashboard-admin.html" class="flex items-center p-3 rounded-lg active-link text-white">
+                            <i class="fas fa-tachometer-alt w-6"></i>
+                            <span class="ml-3 font-medium">Tableau de bord</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="employees.html" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-users w-6"></i>
+                            <span class="ml-3 font-medium">Employés</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="access-logs.html" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-history w-6"></i>
+                            <span class="ml-3 font-medium">Historique des accès</span>
+                            <span id="accessCount" class="ml-auto bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="devices.html" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-rss w-6"></i>
+                            <span class="ml-3 font-medium">Appareils ESP32</span>
+                            <span id="deviceCount" class="ml-auto bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">0</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="schedules.html" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-calendar-alt w-6"></i>
+                            <span class="ml-3 font-medium">Plannings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reports.html" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-chart-bar w-6"></i>
+                            <span class="ml-3 font-medium">Rapports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="settings.html" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-cog w-6"></i>
+                            <span class="ml-3 font-medium">Paramètres</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Section ESP32 Simulation -->
+                <div class="mt-8 pt-8 border-t">
+                    <h3 class="font-bold text-gray-700 mb-4 px-3">ESP32 Simulation</h3>
+                    <div class="bg-gray-900 text-white rounded-xl p-4">
+                        <p class="text-sm mb-3">Testez le système sans matériel</p>
+                        <select id="simBadgeSelect" class="w-full p-2 bg-gray-800 rounded mb-3 text-sm">
+                            <option value="EMP001">EMP001 - Jean Martin</option>
+                            <option value="EMP002">EMP002 - Marie Dubois</option>
+                            <option value="EMP003">EMP003 - Pierre Bernard</option>
+                            <option value="INVALID">Badge invalide</option>
+                        </select>
+                        <button id="simulateBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded text-sm">
+                            <i class="fas fa-rss mr-2"></i>Simuler scan
+                        </button>
+                        <div id="simResult" class="mt-3 text-xs p-2 rounded hidden"></div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </aside>
+    
+    <!-- Contenu principal -->
+    <main class="main-content pt-16 pl-0 md:pl-64 min-h-screen">
+        <div class="p-4 md:p-8">
+            <!-- En-tête -->
+            <div class="mb-8">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Tableau de bord</h1>
+                <p id="dashboardSubtitle" class="text-gray-600">Chargement...</p>
+            </div>
+            
+            <!-- Cartes statistiques (DYNAMIQUES) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Carte 1 -->
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Employés actifs</p>
+                            <p id="statsEmployees" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="employeesTrend" class="text-green-600 text-sm font-medium">
+                            <i class="fas fa-arrow-up mr-1"></i> Chargement...
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Carte 2 -->
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Accès aujourd'hui</p>
+                            <p id="statsTodayAccess" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-door-open text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="accessTrend" class="text-blue-600 text-sm font-medium">
+                            <i class="fas fa-clock mr-1"></i> Dernier: --
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Carte 3 -->
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Appareils actifs</p>
+                            <p id="statsDevices" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                        </div>
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-rss text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="devicesStatus" class="text-green-600 text-sm font-medium">
+                            <i class="fas fa-check-circle mr-1"></i> Chargement...
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Carte 4 -->
+                <div class="stat-card bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">Alertes en cours</p>
+                            <p id="statsAlerts" class="text-3xl font-bold text-gray-800 mt-2">0</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <span id="alertsStatus" class="text-red-600 text-sm font-medium">
+                            <i class="fas fa-clock mr-1"></i> À vérifier
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Graphique et accès récents -->
+            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                <!-- Graphique activité -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">Activité des accès (7 jours)</h2>
+                        <select class="border border-gray-300 rounded-lg p-2 text-sm">
+                            <option>Cette semaine</option>
+                            <option>Ce mois</option>
+                            <option>Cette année</option>
+                        </select>
+                    </div>
+                    <div class="h-64 flex items-end space-x-2 justify-center" id="activityChart">
+                        <!-- Graphique généré dynamiquement -->
+                        <p class="text-gray-500 self-center">Chargement du graphique...</p>
+                    </div>
+                    <div class="mt-6 pt-6 border-t">
+                        <div class="flex justify-between text-sm">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                                <span class="text-gray-600">Accès autorisés</span>
+                            </div>
+                            <div id="weeklyAccess" class="text-gray-800 font-medium">Chargement...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Accès récents -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">Accès récents</h2>
+                        <a href="access-logs.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Voir tout <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <div id="recentAccessList" class="space-y-4">
+                        <!-- Chargé dynamiquement -->
+                        <p class="text-gray-500 text-center">Chargement des accès récents...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Employés et Actions rapides -->
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Liste employés -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">Employés récents</h2>
+                        <a href="employees.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Gérer les employés <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full" id="employeesTable">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-3 text-gray-600 font-medium">Nom</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Badge ID</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Statut</th>
+                                    <th class="text-left py-3 text-gray-600 font-medium">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesList">
+                                <!-- Chargé dynamiquement -->
+                                <tr>
+                                    <td colspan="4" class="py-8 text-center text-gray-500">
+                                        Chargement des employés...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6">
+                        <a href="employees.html?action=add" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-plus-circle mr-2"></i> Ajouter un nouvel employé
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Actions rapides et ESP32 -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6">Actions rapides</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <a href="employees.html?action=add" class="bg-blue-50 border border-blue-200 rounded-xl p-5 hover:bg-blue-100 transition text-center">
+                            <div class="bg-blue-100 p-3 rounded-full inline-block mb-3">
+                                <i class="fas fa-user-plus text-blue-600 text-xl"></i>
+                            </div>
+                            <p class="font-medium text-gray-800">Ajouter un employé</p>
+                            <p class="text-sm text-gray-600 mt-1">Nouveau badge RFID</p>
+                        </a>
+                        <a href="devices.html" class="bg-green-50 border border-green-200 rounded-xl p-5 hover:bg-green-100 transition text-center">
+                            <div class="bg-green-100 p-3 rounded-full inline-block mb-3">
+                                <i class="fas fa-rss text-green-600 text-xl"></i>
+                            </div>
+                            <p class="font-medium text-gray-800">Gérer appareils</p>
+                            <p class="text-sm text-gray-600 mt-1">ESP32 connectés</p>
+                        </a>
+                        <a href="schedules.html" class="bg-purple-50 border border-purple-200 rounded-xl p-5 hover:bg-purple-100 transition text-center">
+                            <div class="bg-purple-100 p-3 rounded-full inline-block mb-3">
+                                <i class="fas fa-calendar-alt text-purple-600 text-xl"></i>
+                            </div>
+                            <p class="font-medium text-gray-800">Modifier plannings</p>
+                            <p class="text-sm text-gray-600 mt-1">Horaires d'accès</p>
+                        </a>
+                        <a href="reports.html" class="bg-yellow-50 border border-yellow-200 rounded-xl p-5 hover:bg-yellow-100 transition text-center">
+                            <div class="bg-yellow-100 p-3 rounded-full inline-block mb-3">
+                                <i class="fas fa-chart-pie text-yellow-600 text-xl"></i>
+                            </div>
+                            <p class="font-medium text-gray-800">Générer rapport</p>
+                            <p class="text-sm text-gray-600 mt-1">Export PDF/Excel</p>
+                        </a>
+                    </div>
+                    
+                    <!-- ESP32 Connectés -->
+                    <div class="mt-8 pt-8 border-t">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-gray-800">ESP32 Connectés</h3>
+                            <span id="onlineDevicesCount" class="text-sm text-gray-600">0 en ligne</span>
+                        </div>
+                        <div id="connectedDevices">
+                            <!-- Chargé dynamiquement -->
+                            <p class="text-gray-500 text-sm">Aucun appareil connecté</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-12 p-6 border-t text-center text-gray-600 text-sm">
+            <p>SmartAccess v1.0 • Projet universitaire • © 2024 Tous droits réservés</p>
+            <p class="mt-2">Dernière mise à jour: <span id="lastUpdate">--:--:--</span></p>
+        </footer>
+    </main>
+
+    <!-- Scripts -->
+    <script>
+        // Variables globales
+        let dashboardData = null;
+        let lastAccessTime = null;
+        
+        // Menu mobile
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.getElementById('mobileOverlay').classList.toggle('hidden');
+        });
+        
+        document.getElementById('mobileOverlay').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+            this.classList.add('hidden');
+        });
+        
+        // Charger toutes les données
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard-data');
+                const data = await response.json();
+                
+                if (data.success) {
+                    dashboardData = data;
+                    updateDashboardUI();
+                    updateSidebarCounters();
+                    updateLastUpdate();
+                }
+            } catch (error) {
+                console.error('Erreur chargement dashboard:', error);
+                showError('Impossible de charger les données');
+            }
+        }
+        
+        // Mettre à jour l'interface
+        function updateDashboardUI() {
+            const stats = dashboardData.stats;
+            
+            // 1. Cartes statistiques
+            document.getElementById('statsEmployees').textContent = 
+                `${stats.activeEmployees}/${stats.totalEmployees}`;
+            
+            document.getElementById('statsTodayAccess').textContent = 
+                stats.todayAccess;
+            
+            document.getElementById('statsDevices').textContent = 
+                `${stats.onlineDevices}/${stats.totalDevices}`;
+            
+            document.getElementById('statsAlerts').textContent = 
+                stats.todayDenied;
+            
+            // 2. Tendances et status
+            document.getElementById('employeesTrend').innerHTML = 
+                stats.totalEmployees > 0 ? 
+                `<i class="fas fa-arrow-up mr-1"></i> ${stats.totalEmployees} au total` :
+                '<i class="fas fa-info-circle mr-1"></i> Ajoutez des employés';
+            
+            document.getElementById('accessTrend').innerHTML = 
+                stats.todayAccess > 0 ? 
+                `<i class="fas fa-clock mr-1"></i> Dernier: ${getLastAccessTime()}` :
+                '<i class="fas fa-clock mr-1"></i> Aucun accès aujourd\'hui';
+            
+            document.getElementById('devicesStatus').innerHTML = 
+                stats.onlineDevices > 0 ? 
+                `<i class="fas fa-check-circle mr-1"></i> ${stats.onlineDevices} en ligne` :
+                '<i class="fas fa-times-circle mr-1"></i> Aucun appareil en ligne';
+            
+            document.getElementById('alertsStatus').innerHTML = 
+                stats.todayDenied > 0 ? 
+                `<i class="fas fa-exclamation-triangle mr-1"></i> ${stats.todayDenied} alertes` :
+                '<i class="fas fa-check-circle mr-1"></i> Aucune alerte';
+            
+            // 3. Sous-titre
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const dateString = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+            document.getElementById('dashboardSubtitle').textContent = 
+                `Bienvenue, Admin. ${dateString} - ${timeString}`;
+            
+            // 4. Graphique activité
+            updateActivityChart();
+            
+            // 5. Accès récents
+            updateRecentAccess();
+            
+            // 6. Employés
+            updateEmployeesList();
+            
+            // 7. Appareils connectés
+            updateConnectedDevices();
+            
+            // 8. Compteurs sidebar
+            updateSidebarCounters();
+            
+            // 9. Accès hebdomadaire
+            document.getElementById('weeklyAccess').textContent = 
+                `${stats.todayAccess} accès aujourd'hui`;
+        }
+        
+        function getLastAccessTime() {
+            if (dashboardData.recentLogs && dashboardData.recentLogs.length > 0) {
+                const lastLog = dashboardData.recentLogs[0];
+                const time = new Date(lastLog.timestamp);
+                return time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            }
+            return '--:--';
+        }
+        
+        function updateActivityChart() {
+            const chartContainer = document.getElementById('activityChart');
+            
+            // Données simulées pour la démo
+            const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            const values = [80, 90, 70, 95, 85, 40, 25];
+            
+            chartContainer.innerHTML = '';
+            
+            days.forEach((day, index) => {
+                const barHeight = values[index] + '%';
+                const barColor = index < 5 ? 'bg-blue-500' : 'bg-blue-400';
+                
+                const bar = document.createElement('div');
+                bar.className = 'flex-1 flex flex-col items-center';
+                bar.innerHTML = `
+                    <div class="${barColor} w-3/4 rounded-t-lg" style="height: ${barHeight}"></div>
+                    <span class="text-xs text-gray-500 mt-2">${day}</span>
+                `;
+                chartContainer.appendChild(bar);
+            });
+        }
+        
+        function updateRecentAccess() {
+            const container = document.getElementById('recentAccessList');
+            
+            if (!dashboardData.recentLogs || dashboardData.recentLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-door-open text-3xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Aucun accès récent</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            dashboardData.recentLogs.forEach(log => {
+                const time = new Date(log.timestamp);
+                const isSuccess = log.status === 'success';
+                
+                html += `
+                    <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg">
+                        <div class="${isSuccess ? 'bg-green-100' : 'bg-red-100'} p-2 rounded-full mr-4">
+                            <i class="fas fa-${isSuccess ? 'door-open' : 'ban'} ${isSuccess ? 'text-green-600' : 'text-red-600'}"></i>
+                        </div>
+                        <div class="flex-grow">
+                            <p class="font-medium">${log.employeeName}</p>
+                            <p class="text-sm text-gray-600">${log.type} - ${log.location}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-800">
+                                ${time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                ${time.toLocaleDateString()}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function updateEmployeesList() {
+            const tbody = document.getElementById('employeesList');
+            
+            if (!dashboardData.employees || dashboardData.employees.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-gray-500">
+                            <i class="fas fa-users text-2xl text-gray-300 mb-2 block"></i>
+                            Aucun employé enregistré
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            dashboardData.employees.forEach(emp => {
+                const initials = emp.name.split(' ').map(n => n[0]).join('');
+                const isActive = emp.status === 'active';
+                
+                html += `
+                    <tr class="border-b table-row">
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="font-medium text-blue-800">${initials}</span>
+                                </div>
+                                <div>
+                                    <p class="font-medium">${emp.name}</p>
+                                    <p class="text-sm text-gray-600">${emp.department}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-mono">
+                                ${emp.badgeId}
+                            </span>
+                        </td>
+                        <td class="py-4">
+                            <span class="${isActive ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'} px-3 py-1 rounded-full text-sm">
+                                <i class="fas fa-${isActive ? 'check-circle' : 'clock'} mr-1"></i>
+                                ${isActive ? 'Actif' : 'En attente'}
+                            </span>
+                        </td>
+                        <td class="py-4">
+                            <button onclick="editEmployee(${emp.id})" class="text-blue-600 hover:text-blue-800 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteEmployee(${emp.id})" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        function updateConnectedDevices() {
+            const container = document.getElementById('connectedDevices');
+            const counter = document.getElementById('onlineDevicesCount');
+            
+            if (!dashboardData.devices || dashboardData.devices.length === 0) {
+                container.innerHTML = `
+                    <p class="text-gray-500 text-sm">Aucun appareil enregistré</p>
+                `;
+                counter.textContent = '0 en ligne';
+                return;
+            }
+            
+            const onlineDevices = dashboardData.devices.filter(d => d.status === 'online');
+            counter.textContent = `${onlineDevices.length} en ligne`;
+            
+            if (onlineDevices.length === 0) {
+                container.innerHTML = `
+                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-yellow-800 text-sm">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Aucun appareil connecté
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            onlineDevices.forEach(device => {
+                const lastSeen = device.lastSeen ? new Date(device.lastSeen) : null;
+                const timeAgo = lastSeen ? getTimeAgo(lastSeen) : 'Jamais';
+                
+                html += `
+                    <div class="p-4 border rounded-lg mb-3 bg-green-50">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold">${device.name}</h4>
+                                <p class="text-sm text-gray-600">ID: ${device.deviceId}</p>
+                                <p class="text-sm">📍 ${device.location}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                                    ✅ En ligne
+                                </span>
+                                <p class="text-xs text-gray-500 mt-1">${timeAgo}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function updateSidebarCounters() {
+            // Compteur accès
+            const accessCount = dashboardData?.stats?.todayAccess || 0;
+            const accessElement = document.getElementById('accessCount');
+            if (accessElement) {
+                accessElement.textContent = accessCount;
+                accessElement.classList.toggle('hidden', accessCount === 0);
+            }
+            
+            // Compteur appareils
+            const deviceCount = dashboardData?.devices?.length || 0;
+            const deviceElement = document.getElementById('deviceCount');
+            if (deviceElement) {
+                deviceElement.textContent = deviceCount;
+                deviceElement.classList.toggle('hidden', deviceCount === 0);
+            }
+            
+            // Compteur notifications
+            const alertCount = dashboardData?.stats?.todayDenied || 0;
+            const notificationElement = document.getElementById('notificationCount');
+            if (notificationElement) {
+                notificationElement.textContent = alertCount;
+                notificationElement.classList.toggle('hidden', alertCount === 0);
+            }
+        }
+        
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('lastUpdate').textContent = timeString;
+        }
+        
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'À l\'instant';
+            if (diffMins < 60) return `Il y a ${diffMins} min`;
+            if (diffMins < 1440) return `Il y a ${Math.floor(diffMins / 60)}h`;
+            return `Il y a ${Math.floor(diffMins / 1440)}j`;
+        }
+        
+        function showError(message) {
+            // Afficher une notification d'erreur
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50';
+            errorDiv.innerHTML = `
+                <strong class="font-bold">Erreur!</strong>
+                <span class="block sm:inline"> ${message}</span>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+        
+        // Simulation RFID
+        document.getElementById('simulateBtn').addEventListener('click', async function() {
+            const select = document.getElementById('simBadgeSelect');
+            const badgeId = select.value;
+            const resultDiv = document.getElementById('simResult');
+            
+            // Animation du bouton
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scan en cours...';
+            this.disabled = true;
+            
+            try {
+                const response = await fetch('/api/simulate-rfid', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ badgeId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = "mt-3 text-xs p-2 rounded bg-green-900 text-green-200";
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <div>
+                                <strong>ACCÈS AUTORISÉ</strong>
+                                <p>${data.log.employeeName} - ${new Date().toLocaleTimeString()}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = "mt-3 text-xs p-2 rounded bg-red-900 text-red-200";
+                    resultDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-times-circle mr-2"></i>
+                            <div>
+                                <strong>ACCÈS REFUSÉ</strong>
+                                <p>${data.message}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                resultDiv.classList.remove('hidden');
+                
+                // Recharger les données
+                setTimeout(() => {
+                    loadDashboardData();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Erreur simulation:', error);
+                resultDiv.className = "mt-3 text-xs p-2 rounded bg-red-900 text-red-200";
+                resultDiv.innerHTML = 'Erreur de connexion au serveur';
+                resultDiv.classList.remove('hidden');
+            } finally {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                
+                // Cacher le résultat après 5 secondes
+                setTimeout(() => {
+                    resultDiv.classList.add('hidden');
+                }, 5000);
+            }
+        });
+        
+        // Fonctions employés
+        function editEmployee(id) {
+            alert(`Modifier employé #${id} - Fonction à implémenter`);
+        }
+        
+        function deleteEmployee(id) {
+            if (confirm('Supprimer cet employé ?')) {
+                fetch(`/api/employees/${id}`, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadDashboardData();
+                        }
+                    });
+            }
+        }
+        
+        // Charger au démarrage
+        document.addEventListener('DOMContentLoaded', function() {
+            // Récupérer les infos utilisateur
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.name) {
+                document.getElementById('userName').textContent = user.name;
+            }
+            
+            // Charger les données
+            loadDashboardData();
+            
+            // Rafraîchir toutes les 30 secondes
+            setInterval(loadDashboardData, 30000);
+            
+            // Rafraîchir l'heure toutes les secondes
+            setInterval(updateLastUpdate, 1000);
+        });
+    </script>
+</body>
+</html>

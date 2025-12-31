@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Employés - SmartAccess</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { font-family: 'Segoe UI', system-ui, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Barre de navigation supérieure (identique au dashboard) -->
+    <nav class="bg-white shadow-sm fixed top-0 right-0 left-0 z-40 h-16">
+        <div class="flex items-center justify-between px-4 h-full">
+            <button onclick="window.location.href='dashboard-admin.html'" class="md:hidden text-gray-700">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </button>
+            
+            <div class="flex items-center">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fas fa-id-card-alt text-white"></i>
+                </div>
+                <span class="ml-3 font-bold text-gray-800">Smart<span class="text-blue-600">Access</span></span>
+                <span class="ml-4 text-gray-600">/ Employés</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='dashboard-admin.html'" class="text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-tachometer-alt text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Contenu principal -->
+    <main class="pt-20 p-4 md:p-8">
+        <!-- En-tête -->
+        <div class="mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Gestion des Employés</h1>
+            <p class="text-gray-600">Ajoutez, modifiez ou supprimez les employés et leurs badges RFID</p>
+        </div>
+        
+        <!-- Bannière statistiques -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">📊 Vue d'ensemble</h2>
+                    <p id="statsSummary" class="opacity-90">Chargement...</p>
+                </div>
+                <button onclick="openAddEmployeeModal()" class="mt-4 md:mt-0 bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-user-plus mr-2"></i> Ajouter un employé
+                </button>
+            </div>
+        </div>
+        
+        <!-- Liste des employés -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-800">Liste des employés</h2>
+                <div class="flex space-x-2">
+                    <input type="text" id="searchInput" placeholder="Rechercher un employé..." 
+                           class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select id="filterSelect" class="px-4 py-2 border rounded-lg">
+                        <option value="all">Tous les statuts</option>
+                        <option value="active">Actifs seulement</option>
+                        <option value="pending">En attente</option>
+                        <option value="inactive">Inactifs</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="py-4 px-6 text-left text-gray-600 font-medium">Nom</th>
+                            <th class="py-4 px-6 text-left text-gray-600 font-medium">Badge ID</th>
+                            <th class="py-4 px-6 text-left text-gray-600 font-medium">Département</th>
+                            <th class="py-4 px-6 text-left text-gray-600 font-medium">Statut</th>
+                            <th class="py-4 px-6 text-left text-gray-600 font-medium">Dernier accès</th>
+                            <th class="py-4 px-6 text-left text-gray-600 font-medium">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesTableBody">
+                        <!-- Chargé dynamiquement -->
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-gray-500">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                Chargement des employés...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    <span id="pageInfo">0 employés</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage" class="px-4 py-2 border rounded-lg disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span id="currentPage" class="px-4 py-2">1</span>
+                    <button id="nextPage" class="px-4 py-2 border rounded-lg disabled:opacity-50" disabled>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <h3 class="font-bold text-blue-800 mb-3">💡 Comment ajouter un employé</h3>
+            <ol class="list-decimal pl-5 space-y-2 text-blue-700">
+                <li>Cliquez sur "Ajouter un employé"</li>
+                <li>Remplissez les informations (nom, badge ID, département)</li>
+                <li>Générez un nouveau badge ID unique ou scannez un badge RFID</li>
+                <li>Définissez les horaires d'accès si nécessaire</li>
+                <li>Validez l'ajout</li>
+            </ol>
+        </div>
+    </main>
+    
+    <!-- Modal Ajout d'employé -->
+    <div id="addEmployeeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white p-6 border-b flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-800">Ajouter un nouvel employé</h2>
+                <button onclick="closeAddEmployeeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form id="addEmployeeForm" class="p-6">
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Nom complet *</label>
+                        <input type="text" id="employeeName" required
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Prénom Nom">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Badge ID *</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="employeeBadgeId" required
+                                   class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="EMP001">
+                            <button type="button" onclick="generateBadgeId()" class="bg-gray-100 text-gray-700 px-4 rounded-lg hover:bg-gray-200">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">ID unique du badge RFID</p>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Département</label>
+                        <select id="employeeDepartment" class="w-full p-3 border border-gray-300 rounded-lg">
+                            <option value="">Sélectionnez</option>
+                            <option value="Direction">Direction</option>
+                            <option value="RH">Ressources Humaines</option>
+                            <option value="Technique">Technique</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Production">Production</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Statut</label>
+                        <select id="employeeStatus" class="w-full p-3 border border-gray-300 rounded-lg">
+                            <option value="active">Actif</option>
+                            <option value="pending">En attente</option>
+                            <option value="inactive">Inactif</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-medium">Plage horaire d'accès</label>
+                    <select id="employeeSchedule" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="9h-18h">9h00 - 18h00 (Standard)</option>
+                        <option value="8h-17h">8h00 - 17h00</option>
+                        <option value="8h30-17h30">8h30 - 17h30</option>
+                        <option value="24/7">24h/24 - 7j/7</option>
+                        <option value="custom">Personnalisé...</option>
+                    </select>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Email</label>
+                        <input type="email" id="employeeEmail"
+                               class="w-full p-3 border border-gray-300 rounded-lg"
+                               placeholder="employe@entreprise.com">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-medium">Téléphone</label>
+                        <input type="tel" id="employeePhone"
+                               class="w-full p-3 border border-gray-300 rounded-lg"
+                               placeholder="01 23 45 67 89">
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="button" onclick="closeAddEmployeeModal()"
+                            class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50">
+                        Annuler
+                    </button>
+                    <button type="submit"
+                            class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700">
+                        Ajouter l'employé
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal Confirmation suppression -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div class="mb-6">
+                <div class="bg-red-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 text-center mb-2">Confirmer la suppression</h3>
+                <p id="deleteMessage" class="text-gray-600 text-center">Êtes-vous sûr de vouloir supprimer cet employé ?</p>
+            </div>
+            
+            <div class="flex space-x-4">
+                <button onclick="closeDeleteModal()"
+                        class="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50">
+                    Annuler
+                </button>
+                <button onclick="confirmDelete()"
+                        class="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700">
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        let employees = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let employeeToDelete = null;
+        
+        // Charger les employés
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees');
+                const data = await response.json();
+                
+                if (data.success) {
+                    employees = data.employees;
+                    updateEmployeesTable();
+                    updateStats();
+                    updatePagination();
+                }
+            } catch (error) {
+                console.error('Erreur chargement employés:', error);
+                showError('Impossible de charger les employés');
+            }
+        }
+        
+        // Filtrer et paginer les employés
+        function getFilteredEmployees() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filterStatus = document.getElementById('filterSelect').value;
+            
+            return employees.filter(emp => {
+                const matchesSearch = emp.name.toLowerCase().includes(searchTerm) || 
+                                      emp.badgeId.toLowerCase().includes(searchTerm) ||
+                                      emp.department?.toLowerCase().includes(searchTerm);
+                
+                const matchesFilter = filterStatus === 'all' || emp.status === filterStatus;
+                
+                return matchesSearch && matchesFilter;
+            });
+        }
+        
+        // Mettre à jour le tableau
+        function updateEmployeesTable() {
+            const tbody = document.getElementById('employeesTableBody');
+            const filtered = getFilteredEmployees();
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const pageEmployees = filtered.slice(startIndex, startIndex + itemsPerPage);
+            
+            if (pageEmployees.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-12 text-center">
+                            <i class="fas fa-users text-4xl text-gray-300 mb-4 block"></i>
+                            <p class="text-gray-500">Aucun employé trouvé</p>
+                            <button onclick="openAddEmployeeModal()" class="mt-4 text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-user-plus mr-2"></i>Ajouter le premier employé
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            pageEmployees.forEach(emp => {
+                const lastAccess = emp.lastAccess ? 
+                    new Date(emp.lastAccess).toLocaleDateString('fr-FR') : 
+                    'Jamais';
+                
+                const statusColors = {
+                    active: 'bg-green-100 text-green-800',
+                    pending: 'bg-yellow-100 text-yellow-800',
+                    inactive: 'bg-red-100 text-red-800'
+                };
+                
+                const statusIcons = {
+                    active: 'fa-check-circle',
+                    pending: 'fa-clock',
+                    inactive: 'fa-ban'
+                };
+                
+                const statusText = {
+                    active: 'Actif',
+                    pending: 'En attente',
+                    inactive: 'Inactif'
+                };
+                
+                html += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="font-medium text-blue-800">
+                                        ${emp.name.split(' ').map(n => n[0]).join('')}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="font-medium">${emp.name}</p>
+                                    <p class="text-sm text-gray-500">${emp.email || 'Pas d\'email'}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-mono">
+                                ${emp.badgeId}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">${emp.department || 'Non spécifié'}</td>
+                        <td class="py-4 px-6">
+                            <span class="${statusColors[emp.status]} px-3 py-1 rounded-full text-sm">
+                                <i class="fas ${statusIcons[emp.status]} mr-1"></i>
+                                ${statusText[emp.status]}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">${lastAccess}</td>
+                        <td class="py-4 px-6">
+                            <div class="flex space-x-2">
+                                <button onclick="editEmployee(${emp.id})" 
+                                        class="text-blue-600 hover:text-blue-800 p-2">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="openDeleteModal(${emp.id}, '${emp.name}')" 
+                                        class="text-red-600 hover:text-red-800 p-2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button onclick="viewEmployee(${emp.id})" 
+                                        class="text-green-600 hover:text-green-800 p-2">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Mettre à jour les statistiques
+        function updateStats() {
+            const activeCount = employees.filter(e => e.status === 'active').length;
+            const pendingCount = employees.filter(e => e.status === 'pending').length;
+            const inactiveCount = employees.filter(e => e.status === 'inactive').length;
+            
+            document.getElementById('statsSummary').textContent = 
+                `${employees.length} employés • ${activeCount} actifs • ${pendingCount} en attente • ${inactiveCount} inactifs`;
+        }
+        
+        // Pagination
+        function updatePagination() {
+            const filtered = getFilteredEmployees();
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            
+            document.getElementById('pageInfo').textContent = 
+                `${filtered.length} employés • Page ${currentPage}/${totalPages || 1}`;
+            
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+        
+        // Générer un badge ID unique
+        function generateBadgeId() {
+            const prefix = 'EMP';
+            const random = Math.floor(100 + Math.random() * 900);
+            document.getElementById('employeeBadgeId').value = `${prefix}${random}`;
+        }
+        
+        // Ouvrir modal ajout
+        function openAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.remove('hidden');
+            document.getElementById('addEmployeeForm').reset();
+            generateBadgeId();
+        }
+        
+        // Fermer modal ajout
+        function closeAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.add('hidden');
+        }
+        
+        // Ouvrir modal suppression
+        function openDeleteModal(id, name) {
+            employeeToDelete = id;
+            document.getElementById('deleteMessage').textContent = 
+                `Êtes-vous sûr de vouloir supprimer "${name}" ? Cette action est irréversible.`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+        
+        // Fermer modal suppression
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            employeeToDelete = null;
+        }
+        
+        // Confirmer suppression
+        async function confirmDelete() {
+            if (!employeeToDelete) return;
+            
+            try {
+                const response = await fetch(`/api/employees/${employeeToDelete}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Employé supprimé avec succès');
+                    await loadEmployees();
+                    closeDeleteModal();
+                } else {
+                    showError('Erreur lors de la suppression: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erreur suppression:', error);
+                showError('Impossible de supprimer l\'employé');
+            }
+        }
+        
+        // Ajouter un employé
+        document.getElementById('addEmployeeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const employee = {
+                name: document.getElementById('employeeName').value,
+                badgeId: document.getElementById('employeeBadgeId').value,
+                department: document.getElementById('employeeDepartment').value,
+                status: document.getElementById('employeeStatus').value,
+                accessSchedule: document.getElementById('employeeSchedule').value,
+                email: document.getElementById('employeeEmail').value,
+                phone: document.getElementById('employeePhone').value
+            };
+            
+            // Vérifier si le badge ID existe déjà
+            const exists = employees.some(e => e.badgeId === employee.badgeId);
+            if (exists) {
+                showError('Ce badge ID est déjà utilisé');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/employees', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(employee)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Employé ajouté avec succès');
+                    await loadEmployees();
+                    closeAddEmployeeModal();
+                } else {
+                    showError('Erreur lors de l\'ajout: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erreur ajout:', error);
+                showError('Impossible d\'ajouter l\'employé');
+            }
+        });
+        
+        // Éditer un employé
+        async function editEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (!employee) return;
+            
+            // Ouvrir modal avec données pré-remplies
+            openAddEmployeeModal();
+            
+            // Remplir le formulaire
+            document.getElementById('employeeName').value = employee.name;
+            document.getElementById('employeeBadgeId').value = employee.badgeId;
+            document.getElementById('employeeDepartment').value = employee.department || '';
+            document.getElementById('employeeStatus').value = employee.status;
+            document.getElementById('employeeSchedule').value = employee.accessSchedule || '9h-18h';
+            document.getElementById('employeeEmail').value = employee.email || '';
+            document.getElementById('employeePhone').value = employee.phone || '';
+            
+            // Changer le bouton
+            const submitBtn = document.querySelector('#addEmployeeForm button[type="submit"]');
+            submitBtn.textContent = 'Modifier l\'employé';
+            submitBtn.onclick = async function(e) {
+                e.preventDefault();
+                
+                const updatedEmployee = {
+                    name: document.getElementById('employeeName').value,
+                    badgeId: document.getElementById('employeeBadgeId').value,
+                    department: document.getElementById('employeeDepartment').value,
+                    status: document.getElementById('employeeStatus').value,
+                    accessSchedule: document.getElementById('employeeSchedule').value,
+                    email: document.getElementById('employeeEmail').value,
+                    phone: document.getElementById('employeePhone').value
+                };
+                
+                try {
+                    const response = await fetch(`/api/employees/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedEmployee)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess('Employé modifié avec succès');
+                        await loadEmployees();
+                        closeAddEmployeeModal();
+                    }
+                } catch (error) {
+                    console.error('Erreur modification:', error);
+                    showError('Impossible de modifier l\'employé');
+                }
+            };
+        }
+        
+        // Voir détails employé
+        function viewEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            if (!employee) return;
+            
+            alert(`Détails employé:\n\n` +
+                  `Nom: ${employee.name}\n` +
+                  `Badge ID: ${employee.badgeId}\n` +
+                  `Département: ${employee.department || 'Non spécifié'}\n` +
+                  `Statut: ${employee.status}\n` +
+                  `Horaire: ${employee.accessSchedule || '9h-18h'}\n` +
+                  `Email: ${employee.email || 'Non renseigné'}\n` +
+                  `Téléphone: ${employee.phone || 'Non renseigné'}\n` +
+                  `Dernier accès: ${employee.lastAccess ? new Date(employee.lastAccess).toLocaleString() : 'Jamais'}`);
+        }
+        
+        // Notifications
+        function showSuccess(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg z-50';
+            notification.innerHTML = `
+                <strong class="font-bold">Succès!</strong>
+                <span class="block sm:inline"> ${message}</span>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        function showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50';
+            notification.innerHTML = `
+                <strong class="font-bold">Erreur!</strong>
+                <span class="block sm:inline"> ${message}</span>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        // Événements
+        document.getElementById('searchInput').addEventListener('input', () => {
+            currentPage = 1;
+            updateEmployeesTable();
+            updatePagination();
+        });
+        
+        document.getElementById('filterSelect').addEventListener('change', () => {
+            currentPage = 1;
+            updateEmployeesTable();
+            updatePagination();
+        });
+        
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateEmployeesTable();
+                updatePagination();
+            }
+        });
+        
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const filtered = getFilteredEmployees();
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateEmployeesTable();
+                updatePagination();
+            }
+        });
+        
+        // Charger au démarrage
+        document.addEventListener('DOMContentLoaded', loadEmployees);
+    </script>
+</body>
+</html>
